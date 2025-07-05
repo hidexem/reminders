@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>HX Password Generator</title>
+  <style>
+    :root {
+      --bg-color: #eef2f3;
+      --text-color: #111;
+      --box-bg: #fff;
+      --input-bg: #fff;
+      --btn-bg: #28a745;
+      --btn-text: #fff;
+      --btn-hover: #218838;
+      --copy-bg: #007bff;
+      --copy-hover: #0056b3;
+    }
+
+    body.dark {
+      --bg-color: #121212;
+      --text-color: #eee;
+      --box-bg: #1e1e1e;
+      --input-bg: #2a2a2a;
+      --btn-bg: #3cb371;
+      --btn-hover: #2e8b57;
+      --copy-bg: #3399ff;
+      --copy-hover: #2277cc;
+    }
+
+    body {
+      font-family: Arial, sans-serif;
+      background: var(--bg-color);
+      color: var(--text-color);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      transition: 0.3s;
+    }
+
+    .container {
+      background: var(--box-bg);
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 5px 25px rgba(0, 0, 0, 0.1);
+      text-align: center;
+      width: 90%;
+      max-width: 420px;
+      transition: 0.3s;
+    }
+
+    h2 {
+      margin-bottom: 20px;
+    }
+
+    #password {
+      font-size: 18px;
+      padding: 10px;
+      width: 100%;
+      margin-bottom: 10px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      background: var(--input-bg);
+      color: var(--text-color);
+    }
+
+    button {
+      background-color: var(--btn-bg);
+      color: var(--btn-text);
+      padding: 10px 18px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 16px;
+      margin: 5px 4px;
+      transition: 0.3s;
+    }
+
+    button:hover {
+      background-color: var(--btn-hover);
+    }
+
+    .copy-button {
+      background-color: var(--copy-bg);
+    }
+
+    .copy-button:hover {
+      background-color: var(--copy-hover);
+    }
+
+    .options {
+      text-align: left;
+      margin: 15px 0;
+    }
+
+    .range-control {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 5px;
+    }
+
+    .range-control button {
+      width: 35px;
+      padding: 6px;
+      font-size: 18px;
+    }
+
+    .strength {
+      margin-top: 10px;
+      font-weight: bold;
+    }
+
+    input[type=range] {
+      width: 100%;
+    }
+
+    .checkbox-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-top: 15px;
+    }
+
+    .checkbox-list label {
+      font-size: 15px;
+    }
+
+    .mode-toggle {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      background: #444;
+      color: #fff;
+      border: none;
+      padding: 8px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    .mode-toggle:hover {
+      background: #666;
+    }
+  </style>
+</head>
+<body>
+
+<button class="mode-toggle" onclick="toggleMode()">🌙</button>
+
+<div class="container">
+  <h2>🔐 HX Password Generator</h2>
+
+  <input type="text" id="password" readonly placeholder="Your password will appear here">
+  <div class="strength" id="strength"></div>
+
+  <div class="options">
+    <label>Password Length: <span id="lengthValue">12</span></label>
+    <div class="range-control">
+      <button onclick="changeLength(-1)">−</button>
+      <input type="range" id="length" min="6" max="32" value="12"
+             oninput="updateLengthDisplay()">
+      <button onclick="changeLength(1)">+</button>
+    </div>
+
+    <div class="checkbox-list">
+      <label><input type="checkbox" id="lowercase" checked> Include Lowercase (a-z)</label>
+      <label><input type="checkbox" id="uppercase" checked> Include Uppercase (A-Z)</label>
+      <label><input type="checkbox" id="numbers" checked> Include Numbers (0-9)</label>
+      <label><input type="checkbox" id="symbols" checked> Include Symbols (!@#$...)</label>
+    </div>
+  </div>
+
+  <button onclick="generatePassword()">Generate</button>
+  <button class="copy-button" onclick="copyPassword()">Copy</button>
+</div>
+
+<script>
+  function updateLengthDisplay() {
+    const length = document.getElementById("length").value;
+    document.getElementById("lengthValue").textContent = length;
+  }
+
+  function changeLength(delta) {
+    const lengthSlider = document.getElementById("length");
+    let currentLength = parseInt(lengthSlider.value);
+    currentLength = Math.min(32, Math.max(6, currentLength + delta));
+    lengthSlider.value = currentLength;
+    updateLengthDisplay();
+  }
+
+  function generatePassword() {
+    const length = document.getElementById('length').value;
+    const includeLower = document.getElementById('lowercase').checked;
+    const includeUpper = document.getElementById('uppercase').checked;
+    const includeNumbers = document.getElementById('numbers').checked;
+    const includeSymbols = document.getElementById('symbols').checked;
+
+    let charset = "";
+    if (includeLower) charset += "abcdefghijklmnopqrstuvwxyz";
+    if (includeUpper) charset += "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    if (includeNumbers) charset += "0123456789";
+    if (includeSymbols) charset += "!@#$%^&*()_-+=<>?";
+
+    if (charset === "") {
+      alert("Please select at least one option.");
+      return;
+    }
+
+    let password = "";
+    for (let i = 0; i < length; i++) {
+      const randomIndex = Math.floor(Math.random() * charset.length);
+      password += charset[randomIndex];
+    }
+
+    document.getElementById('password').value = password;
+    checkStrength(password);
+  }
+
+  function copyPassword() {
+    const passField = document.getElementById("password");
+    const password = passField.value;
+
+    // ✅ Modern Clipboard API
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(password).then(() => {
+        alert("Copied to clipboard!");
+      }).catch(() => {
+        fallbackCopy(passField);
+      });
+    } else {
+      fallbackCopy(passField);
+    }
+  }
+
+  function fallbackCopy(inputElement) {
+    inputElement.select();
+    inputElement.setSelectionRange(0, 99999); // mobile support
+    document.execCommand("copy");
+    alert("Copied (fallback)!");
+  }
+
+  function checkStrength(password) {
+    let strength = "Weak";
+    const strongRegex = new RegExp("^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[!@#$%^&*]).{12,}$");
+    const mediumRegex = new RegExp("^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d).{8,}$");
+
+    if (strongRegex.test(password)) {
+      strength = "Strong 💪";
+      document.getElementById("strength").style.color = "limegreen";
+    } else if (mediumRegex.test(password)) {
+      strength = "Medium ⚠️";
+      document.getElementById("strength").style.color = "orange";
+    } else {
+      strength = "Weak ❌";
+      document.getElementById("strength").style.color = "red";
+    }
+
+    document.getElementById("strength").textContent = "Strength: " + strength;
+  }
+
+  function toggleMode() {
+    document.body.classList.toggle("dark");
+    const toggleBtn = document.querySelector(".mode-toggle");
+    toggleBtn.textContent = document.body.classList.contains("dark") ? "☀️" : "🌙";
+  }
+
+  updateLengthDisplay();
+</script>
+
+</body>
+</html>
