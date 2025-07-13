@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Category-wise Search Grid with Animated Reset Button</title>
+  <style>
+    /* Your original root variables and theme colors */
+    :root {
+      --bg: #f4f7f9;
+      --header: rgba(44, 62, 80, 0.9);
+      --text: #000;
+      --accent: #1abc9c;
+    }
+    [data-theme="dark"] {
+      --bg: #1e1e1e;
+      --header: rgba(30, 30, 30, 0.95);
+      --text: #fff;
+      --accent: #3498db;
+    }
+    * {
+      box-sizing: border-box;
+      margin: 0; padding: 0;
+    }
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      padding-top: 75px;
+      transition: background 0.3s, color 0.3s;
+      min-height: 100vh;
+    }
+    header {
+      position: fixed;
+      top: 0; left: 0; width: 100%;
+      background: var(--header);
+      backdrop-filter: blur(10px);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 20px;
+      z-index: 1000;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .logo img {
+      height: 45px;
+      transition: height 0.3s ease;
+    }
+    .search-area {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: nowrap;
+      flex: 1;
+      min-width: 250px;
+      justify-content: flex-end;
+    }
+    .search-area input,
+    .search-area select {
+      height: 36px;
+      padding: 0 12px;
+      border-radius: 8px;
+      border: none;
+      font-size: 14px;
+      cursor: pointer;
+      box-sizing: border-box;
+    }
+    .search-area input {
+      width: 140px;
+    }
+    .search-area select {
+      width: 100px;
+    }
+    .icon-button {
+      height: 36px;
+      width: 36px;
+      background: var(--accent);
+      border: none;
+      border-radius: 8px;
+      color: white;
+      cursor: pointer;
+      font-size: 18px;
+      line-height: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.3s;
+      padding: 0;
+      box-sizing: border-box;
+      flex-shrink: 0;
+      margin: 0;
+    }
+    .icon-button:hover {
+      background: #16a085;
+    }
+    .theme-toggle {
+      font-size: 22px;
+      cursor: pointer;
+    }
+
+    @media (max-width: 640px) {
+      .logo img {
+        height: 30px;
+      }
+      header {
+        justify-content: center;
+        gap: 6px;
+      }
+      .search-area {
+        min-width: 15%;
+        margin-top: 8px;
+        justify-content: center;
+      }
+      .search-area input,
+      .search-area select,
+      .icon-button {
+        width: auto;
+        flex: 1 1 15%;
+        min-width: 0;
+        height: 40px;
+      }
+      .icon-button {
+        width: 40px;
+        font-size: 20px;
+      }
+    }
+    main {
+      max-width: 1000px;
+      margin: 20px auto 40px;
+      padding: 0 10px;
+    }
+    h2 {
+      margin: 20px 0 10px;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 15px;
+    }
+    @media (min-width: 768px) {
+      .grid {
+        grid-template-columns: repeat(6, 1fr);
+      }
+    }
+    .box {
+      background: white;
+      border-radius: 10px;
+      padding: 10px 5px;
+      text-align: center;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.07);
+      transition: transform 0.2s, box-shadow 0.2s;
+      text-decoration: none;
+      color: #333;
+      display: block;
+      position: relative;
+    }
+    .box:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 4px 10px rgba(0,0,0,0.12);
+    }
+    .box img {
+      width: 30px;
+      height: 30px;
+      object-fit: contain;
+      margin-bottom: 8px;
+    }
+    .box span {
+      font-family: 'Patua One', cursive, sans-serif;
+      font-weight: normal;
+      font-size: 12px;
+      display: block;
+    }
+    .pro-tag {
+      position: absolute;
+      top: 6px;
+      right: 6px;
+      background: #ffd600;
+      color: #000;
+      font-size: 9px;
+      padding: 2px 5px;
+      border-radius: 4px;
+    }
+
+    /* From Uiverse.io by Galahhad for reset button */
+    .ui-btn {
+      --btn-default-bg: rgb(41, 41, 41);
+      --btn-padding: 10px 15px;
+      --btn-hover-bg: rgb(51, 51, 51);
+      --btn-transition: .3s;
+      --btn-letter-spacing: .1rem;
+      --btn-animation-duration: 1.2s;
+      --btn-shadow-color: rgba(0, 0, 0, 0.137);
+      --btn-shadow: 0 2px 10px 0 var(--btn-shadow-color);
+      --hover-btn-color: #FAC921;
+      --default-btn-color: #fff;
+      --font-size: 14px;
+      --font-weight: 600;
+      --font-family: Menlo,Roboto Mono,monospace;
+    }
+    .ui-btn {
+      box-sizing: border-box;
+      padding: var(--btn-padding);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--default-btn-color);
+      font: var(--font-weight) var(--font-size) var(--font-family);
+      background: var(--btn-default-bg);
+      border: none;
+      cursor: pointer;
+      transition: var(--btn-transition);
+      overflow: hidden;
+      box-shadow: var(--btn-shadow);
+      border-radius: 8px;
+      user-select: none;
+      min-width: 80px;
+    }
+    .ui-btn span {
+      letter-spacing: var(--btn-letter-spacing);
+      transition: var(--btn-transition);
+      box-sizing: border-box;
+      position: relative;
+      background: inherit;
+    }
+    .ui-btn span::before {
+      box-sizing: border-box;
+      position: absolute;
+      content: "";
+      background: inherit;
+    }
+    .ui-btn:hover, .ui-btn:focus {
+      background: var(--btn-hover-bg);
+      outline: none;
+    }
+    .ui-btn:hover span, .ui-btn:focus span {
+      color: var(--hover-btn-color);
+    }
+    .ui-btn:hover span::before, .ui-btn:focus span::before {
+      animation: chitchat linear both var(--btn-animation-duration);
+    }
+    @keyframes chitchat {
+      0% { content: "#"; }
+      5% { content: "."; }
+      10% { content: "^{"; }
+      15% { content: "-!"; }
+      20% { content: "#$_"; }
+      25% { content: "№:0"; }
+      30% { content: "#{+."; }
+      35% { content: "@}-?"; }
+      40% { content: "?{4@%"; }
+      45% { content: "=.,^!"; }
+      50% { content: "?2@%"; }
+      55% { content: "\\;1}]"; }
+      60% { content: "?{%:%"; right: 0; }
+      65% { content: "|{f[4"; right: 0; }
+      70% { content: "{4%0%"; right: 0; }
+      75% { content: "'1_0<"; right: 0; }
+      80% { content: "{0%"; right: 0; }
+      85% { content: "]>'"; right: 0; }
+      90% { content: "4"; right: 0; }
+      95% { content: "2"; right: 0; }
+      100% { content: ""; right: 0; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="logo">
+      <img src="https://i.ibb.co/tTx5Wq21/clapperboard.png" alt="Logo" />
+    </div>
+    <div class="search-area">
+      <input type="text" id="searchInput" placeholder="Search..." aria-label="Search" oninput="filterBoxes()" />
+      <select id="filterOption" aria-label="Filter options" onchange="filterBoxes()">
+        <option value="">Filter</option>
+        <option value="movie">Movie</option>
+        <option value="tv">TV</option>
+      </select>
+      <!-- Reset button with animated style -->
+      <button 
+        class="ui-btn" 
+        onclick="resetSearch()" 
+        title="Reset search and filter" 
+        aria-label="Reset"
+      >
+        <span>Reset</span>
+      </button>
+
+      <span 
+        class="theme-toggle" 
+        role="button" 
+        tabindex="0" 
+        title="Toggle Theme" 
+        aria-label="Toggle dark/light mode" 
+        onclick="toggleTheme()"
+        onkeypress="if(event.key === 'Enter' || event.key === ' ') toggleTheme()"
+      >
+        ☀️
+      </span>
+    </div>
+  </header>
+
+  <main>
+    <h2>🎬 Movies</h2>
+    <div class="grid" id="movieGrid">
+      <a href="#" class="box" data-category="movie">
+        <div class="pro-tag">PRO</div>
+        <img src="https://cdn-icons-png.flaticon.com/512/321/321817.png" alt="rocket icon" />
+        <span>Rocket</span>
+      </a>
+      <a href="#" class="box" data-category="movie">
+        <img src="https://cdn-icons-png.flaticon.com/512/847/847969.png" alt="settings icon" />
+        <span>Settings</span>
+      </a>
+      <a href="#" class="box" data-category="movie">
+        <img src="https://cdn-icons-png.flaticon.com/512/847/847969.png" alt="settings icon" />
+        <span>Settings</span>
+      </a>
+      <a href="#" class="box" data-category="movie">
+        <img src="https://cdn-icons-png.flaticon.com/512/847/847969.png" alt="settings icon" />
+        <span>Settings</span>
+      </a>
+    </div>
+
+    <h2>📺 TV</h2>
+    <div class="grid" id="tvGrid">
+      <a href="#" class="box" data-category="tv">
+        <img src="https://cdn-icons-png.flaticon.com/512/281/281769.png" alt="folder icon" />
+        <span>Folder</span>
+      </a>
+      <a href="#" class="box" data-category="tv">
+        <div class="pro-tag">PRO</div>
+        <img src="https://cdn-icons-png.flaticon.com/512/906/906175.png" alt="shield icon" />
+        <span>Security</span>
+      </a>
+    </div>
+
+    <h2>📁 Others</h2>
+    <div class="grid" id="otherGrid">
+      <a href="#" class="box" data-category="">
+        <img src="https://cdn-icons-png.flaticon.com/512/747/747376.png" alt="calendar icon" />
+        <span>Calendar</span>
+      </a>
+      <a href="#" class="box" data-category="">
+        <img src="https://cdn-icons-png.flaticon.com/512/54/54779.png" alt="paperclip icon" />
+        <span>Paperclip</span>
+      </a>
+    </div>
+  </main>
+
+  <script>
+    function resetSearch() {
+      document.getElementById('searchInput').value = '';
+      document.getElementById('filterOption').value = '';
+      filterBoxes();
+    }
+
+    function filterBoxes() {
+      const searchText = document.getElementById('searchInput').value.toLowerCase();
+      const filterValue = document.getElementById('filterOption').value.toLowerCase();
+      const allGrids = ['movieGrid', 'tvGrid', 'otherGrid'];
+
+      allGrids.forEach(gridId => {
+        const boxes = document.querySelectorAll(`#${gridId} .box`);
+        let hasVisible = false;
+
+        boxes.forEach(box => {
+          const name = box.querySelector('span').textContent.toLowerCase();
+          const category = box.getAttribute('data-category').toLowerCase();
+          const matchesSearch = name.includes(searchText);
+          const matchesFilter = filterValue === '' || category === filterValue;
+
+          if (matchesSearch && matchesFilter) {
+            box.style.display = 'block';
+            hasVisible = true;
+          } else {
+            box.style.display = 'none';
+          }
+        });
+
+        const gridElement = document.getElementById(gridId);
+        gridElement.style.display = hasVisible ? 'grid' : 'none';
+
+        const heading = gridElement.previousElementSibling;
+        if (heading && heading.tagName === 'H2') {
+          heading.style.display = hasVisible ? 'block' : 'none';
+        }
+      });
+    }
+
+    function toggleTheme() {
+      const html = document.documentElement;
+      const current = html.getAttribute('data-theme');
+      const toggle = document.querySelector('.theme-toggle');
+      if (current === 'dark') {
+        html.setAttribute('data-theme', 'light');
+        toggle.textContent = '☀️';
+      } else {
+        html.setAttribute('data-theme', 'dark');
+        toggle.textContent = '🌙';
+      }
+    }
+  </script>
+</body>
+</html>
