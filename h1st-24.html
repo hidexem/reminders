@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Honours 1st Year 2024</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Bengali&display=swap" rel="stylesheet">
+<style>
+    body {
+        margin: 0;
+        font-family: 'Segoe UI', sans-serif;
+        background: #f4f4f4;
+        color: #333;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 20px;
+    }
+    h1 {
+        font-size: 28px;
+        margin-bottom: 20px;
+    }
+    /* Speaker Icon */
+    .speaker-icon {
+        position: fixed;
+        top: 15px;
+        right: 20px;
+        font-size: 28px;
+        cursor: pointer;
+        color: #333;
+        background: #fff;
+        padding: 6px 10px;
+        border-radius: 50%;
+        box-shadow: 0 3px 8px rgba(0,0,0,0.2);
+        transition: 0.3s;
+    }
+    .speaker-icon:hover {
+        background: #e0e0e0;
+    }
+    .exam-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+        gap: 20px;
+        width: 100%;
+        max-width: 1200px;
+    }
+    .card {
+        background: #fff;
+        border-radius: 12px;
+        padding: 20px;
+        text-align: center;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+    .title {
+        font-size: 18px;
+        font-weight: bold;
+        margin-bottom: 10px;
+    }
+    .date {
+        font-size: 14px;
+        margin-bottom: 15px;
+        color: #666;
+    }
+    .bangla-date {
+    font-family: 'Noto Sans Bengali', sans-serif;
+    font-size: 16px;
+    color: #333;
+    }
+
+    .flip-timer {
+        display: flex;
+        justify-content: center;
+        gap: 12px;
+    }
+    .digit {
+        background: #333;
+        color: #fff;
+        font-size: 30px;
+        font-weight: bold;
+        width: 70px;
+        height: 80px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .label {
+        margin-top: 5px;
+        font-size: 12px;
+        color: #666;
+        font-weight: bold;
+    }
+    .flip {
+        animation: flip 0.7s ease-in-out;
+    }
+    @keyframes flip {
+        0% { transform: rotateX(0deg); }
+        50% { transform: rotateX(-90deg); }
+        100% { transform: rotateX(0deg); }
+    }
+    .progress {
+        margin-top: 12px;
+        background: #eee;
+        border-radius: 10px;
+        overflow: hidden;
+        height: 16px;
+    }
+    .progress-bar {
+        height: 100%;
+        background: #00b894;
+        width: 0%;
+        transition: width 0.5s linear;
+    }
+</style>
+</head>
+<body>
+
+<h1>📚 Honours 1st Year 2025 <br>Mathematics Exam Countdown</h1>
+<!-- Speaker Icon -->
+<div class="speaker-icon" id="speaker" title="Mute/Unmute">🔊</div>
+
+<div class="exam-container" id="examContainer"></div>
+
+<!-- Tick-Tock Sound -->
+<audio id="tick" src="https://www.soundjay.com/clock/sounds/clock-ticking-1.mp3"></audio>
+
+<script>
+const exams = [
+    { date: '2025-08-24 13:30:00', title: 'History of the Emergence Independent of Bangladesh' },
+    { date: '2025-08-28 13:30:00', title: 'Fundamentals of Mathematics' },
+    { date: '2025-08-31 13:30:00', title: 'Calculus - I' },
+    { date: '2025-09-03 13:30:00', title: 'Linear Algebra' },
+    { date: '2025-09-07 13:30:00', title: 'Analytic and Vector Geometry' },
+    { date: '2025-09-14 13:30:00', title: 'Physics-I' },
+    { date: '2025-09-22 13:30:00', title: 'Physics-II' },
+    { date: '2025-10-12 13:30:00', title: 'Chemistry-I' },
+];
+
+const container = document.getElementById('examContainer');
+const speaker = document.getElementById('speaker');
+const tickSound = document.getElementById('tick');
+let soundOn = true; // Default ON
+
+exams.forEach((exam, index) => {
+    const card = document.createElement('div');
+    card.className = 'card';
+    card.innerHTML = `
+        <div class="title">${exam.title}</div>
+        <div class="date bangla-date">${new Date(exam.date).toLocaleDateString('bn-BD', {
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+})} |  ১:৩০ দুপুর</div>
+        <div class="flip-timer" id="timer-${index}">
+            ${['Days','Hours','Minutes','Seconds'].map(unit => `
+                <div>
+                    <div class="digit" id="${unit}-${index}">00</div>
+                    <div class="label">${unit}</div>
+                </div>
+            `).join('')}
+        </div>
+        <div class="progress"><div class="progress-bar" id="progress-${index}"></div></div>
+    `;
+    container.appendChild(card);
+
+    const endTime = new Date(exam.date).getTime();
+    const totalTime = endTime - Date.now();
+
+    function updateCountdown() {
+        const now = Date.now();
+        const diff = endTime - now;
+
+        if (diff <= 0) {
+            document.getElementById(`timer-${index}`).innerHTML = "<b>Exam Started!</b>";
+            document.getElementById(`progress-${index}`).style.width = "100%";
+            return;
+        }
+
+        const d = Math.floor(diff / (1000 * 60 * 60 * 24));
+        const h = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+        const s = Math.floor((diff % (1000 * 60)) / 1000);
+
+        animateFlip(`Days-${index}`, d);
+        animateFlip(`Hours-${index}`, h);
+        animateFlip(`Minutes-${index}`, m);
+        animateFlip(`Seconds-${index}`, s);
+
+        // progress বার আজ থেকে এক্সাম শুরু পর্যন্ত বৃদ্ধি পাবে
+        const elapsed = totalTime - diff;
+        const progress = (elapsed / totalTime) * 100;
+        document.getElementById(`progress-${index}`).style.width = progress + "%";
+    }
+
+    updateCountdown();
+    setInterval(updateCountdown, 1000);
+});
+
+function animateFlip(id, newValue) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    const currentVal = parseInt(el.innerText);
+    if (currentVal !== newValue) {
+        el.classList.add('flip');
+        setTimeout(() => {
+            el.innerText = String(newValue).padStart(2, '0');
+            el.classList.remove('flip');
+        }, 350);
+    }
+}
+
+// Tick sound loop
+setInterval(() => {
+    if (soundOn) {
+        tickSound.currentTime = 0;
+        tickSound.play().catch(() => {});
+    }
+}, 1000);
+
+// Toggle sound on speaker click
+speaker.addEventListener('click', () => {
+    soundOn = !soundOn;
+    speaker.innerText = soundOn ? '🔊' : '🔇';
+});
+</script>
+
+</body>
+</html>
