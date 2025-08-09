@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Honours 1st Year 2024</title>
+<title>Honours 1st Year 2025</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Bengali&display=swap" rel="stylesheet">
 <style>
     body {
@@ -19,8 +19,8 @@
     h1 {
         font-size: 28px;
         margin-bottom: 20px;
+        text-align: center;
     }
-    /* Speaker Icon */
     .speaker-icon {
         position: fixed;
         top: 15px;
@@ -62,11 +62,10 @@
         color: #666;
     }
     .bangla-date {
-    font-family: 'Noto Sans Bengali', sans-serif;
-    font-size: 16px;
-    color: #333;
+        font-family: 'Noto Sans Bengali', sans-serif;
+        font-size: 16px;
+        color: #333;
     }
-
     .flip-timer {
         display: flex;
         justify-content: center;
@@ -115,14 +114,12 @@
 </head>
 <body>
 
-<h1>📚 Honours 1st Year 2024 <br>Mathematics Exam Countdown</h1>
-<!-- Speaker Icon -->
+<h1>📚 Honours 1st Year 2025 <br>Mathematics Exam Countdown</h1>
 <div class="speaker-icon" id="speaker" title="Mute/Unmute">🔊</div>
 
 <div class="exam-container" id="examContainer"></div>
 
-<!-- Tick-Tock Sound -->
-<audio id="tick" src="https://www.soundjay.com/clock/sounds/clock-ticking-2.mp3"></audio>
+<audio id="tick" src="https://www.soundjay.com/clock/sounds/clock-ticking-1.mp3"></audio>
 
 <script>
 const exams = [
@@ -136,10 +133,19 @@ const exams = [
     { date: '2025-10-12 13:30:00', title: 'Chemistry-I' },
 ];
 
+const startDate = new Date('2025-08-01 00:00:00').getTime(); // শুরুর তারিখ
 const container = document.getElementById('examContainer');
 const speaker = document.getElementById('speaker');
 const tickSound = document.getElementById('tick');
-let soundOn = true; // Default ON
+let soundOn = true;
+
+function setProgress(index, endTime) {
+    const now = Date.now();
+    const totalTime = endTime - startDate;
+    const elapsed = now - startDate;
+    const progress = Math.min((elapsed / totalTime) * 100, 100);
+    document.getElementById(`progress-${index}`).style.width = progress + "%";
+}
 
 exams.forEach((exam, index) => {
     const card = document.createElement('div');
@@ -147,11 +153,11 @@ exams.forEach((exam, index) => {
     card.innerHTML = `
         <div class="title">${exam.title}</div>
         <div class="date bangla-date">${new Date(exam.date).toLocaleDateString('bn-BD', {
-    weekday: 'long',
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric'
-})} |  ১:৩০ দুপুর</div>
+            weekday: 'long',
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+        })} |  ১:৩০ দুপুর</div>
         <div class="flip-timer" id="timer-${index}">
             ${['Days','Hours','Minutes','Seconds'].map(unit => `
                 <div>
@@ -165,7 +171,8 @@ exams.forEach((exam, index) => {
     container.appendChild(card);
 
     const endTime = new Date(exam.date).getTime();
-    const totalTime = endTime - Date.now();
+
+    setProgress(index, endTime); // পেজ লোডে সেট
 
     function updateCountdown() {
         const now = Date.now();
@@ -187,10 +194,7 @@ exams.forEach((exam, index) => {
         animateFlip(`Minutes-${index}`, m);
         animateFlip(`Seconds-${index}`, s);
 
-        // progress বার আজ থেকে এক্সাম শুরু পর্যন্ত বৃদ্ধি পাবে
-        const elapsed = totalTime - diff;
-        const progress = (elapsed / totalTime) * 100;
-        document.getElementById(`progress-${index}`).style.width = progress + "%";
+        setProgress(index, endTime); // progress আপডেট
     }
 
     updateCountdown();
@@ -210,7 +214,6 @@ function animateFlip(id, newValue) {
     }
 }
 
-// Tick sound loop
 setInterval(() => {
     if (soundOn) {
         tickSound.currentTime = 0;
@@ -218,7 +221,6 @@ setInterval(() => {
     }
 }, 1000);
 
-// Toggle sound on speaker click
 speaker.addEventListener('click', () => {
     soundOn = !soundOn;
     speaker.innerText = soundOn ? '🔊' : '🔇';
